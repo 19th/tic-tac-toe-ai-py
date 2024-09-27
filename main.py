@@ -1,5 +1,6 @@
 import time
 
+from chatgpt_player import get_gpt_move
 time.sleep(3)
 
 def render(board):
@@ -152,7 +153,66 @@ def play_game_with_ai():
         time.sleep(1)
 
 def play_game_with_chatgpt():
-    pass
+    board = list(" " * 9)
+
+    print("Welcome to Tic-Tac-Toe!")
+
+    current_player = "X"
+    ai_player = "O"
+
+    print(f"Player is {current_player}, AI is {ai_player}")
+
+    while True:
+        render(board)
+        move_index = get_player_move(board, current_player)
+        board[move_index] = current_player
+        
+        if check_win(board, current_player):
+            render(board)
+            print(f"Player {current_player} wins!")
+            break
+
+        if check_draw(board):
+            render(board)
+            print("It's a draw!")
+            break
+
+        render(board)
+        print("AI move")
+
+        # Get the AI move from ChatGPT with 3 retries
+        retry = 0
+        while retry < 3:
+            try:
+                move_index = get_gpt_move(board, ai_player)
+
+                if board[move_index] != " ":
+                    print("Spot already taken. Please choose another.")
+                    retry += 1
+                    continue
+            except Exception as e:
+                print("Error requesting ChatGPT: ", e)
+                print("Retrying...")
+                retry += 1
+                continue
+            break
+        else:
+            print("Failed to get AI move. Exiting...")
+            exit(1)
+            break
+
+        board[move_index] = "O"
+        
+        if check_win(board, ai_player):
+            render(board)
+            print(f"AI wins!")
+            break
+
+        if check_draw(board):
+            render(board)
+            print("It's a draw!")
+            break
+        time.sleep(1)
 
 def main():
     mode = input("Choose a mode:\n1. Play with a friend\n2. Play with AI\n3. Play with ChatGPT\n4. Show history\n5. Show game steps\n6. Exit\n")
