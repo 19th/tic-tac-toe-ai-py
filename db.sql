@@ -1,11 +1,13 @@
 -- Main game data
 CREATE TABLE IF NOT EXISTS game (
-    game_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for each game
+    game_id INTEGER PRIMARY KEY,  -- Unique identifier for each game
     player_x VARCHAR(255) NOT NULL,          -- Player X (empty, username or 'AI' for AI player)
     player_o VARCHAR(255) NOT NULL,          -- Player O (empty, username or 'AI' for AI player)
     winner VARCHAR(10) DEFAULT NULL,         -- Stores winner name ('X', 'O', 'Draw', or NULL if ongoing)
     is_finished BOOLEAN                      -- Game status (ongoing or finished)
 );
+
+-- split
 
 -- Game scores
 CREATE TABLE IF NOT EXISTS game_score (
@@ -15,6 +17,8 @@ CREATE TABLE IF NOT EXISTS game_score (
     score INT NOT NULL,                       -- Score value (0 or more)
     FOREIGN KEY (game_id) REFERENCES game(game_id) ON DELETE CASCADE
 );
+
+-- split
 
 -- Game steps
 CREATE TABLE IF NOT EXISTS game_step (

@@ -1,6 +1,9 @@
 import time
 
+from tabulate import tabulate
+
 from chatgpt_player import get_gpt_move
+from db import get_history, get_steps, save_game, save_step, update_game
 time.sleep(3)
 
 def render(board):
@@ -51,6 +54,25 @@ def get_player_move(board, player):
         except ValueError:
             print("Invalid input. Please enter a number.")
 
+def player_move(board, player, game_id):
+    move_index = get_player_move(board, player)
+    board[move_index] = player
+    render(board)
+    
+    save_step(game_id, player, 0, move_index + 1)
+
+    if check_win(board, player):
+        update_game(game_id, player, True)
+        print(f"Player {player} wins!")
+        return True
+
+    if check_draw(board):
+        update_game(game_id, "draw", True)
+        print("It's a draw!")
+        return True
+
+    return False
+
 def get_ai_move(board, player):
     possible_win_board = board.copy()
 
@@ -93,20 +115,13 @@ def play_with_friend():
     
     print("Welcome to Tic-Tac-Toe!")
     print("Player 1 is X, Player 2 is O")
+    game_id = save_game("player 1", "player 2", None)
+
+    render(board)
 
     while True:
-        render(board)
-        move_index = get_player_move(board, current_player)
-        board[move_index] = current_player
-        
-        if check_win(board, current_player):
-            render(board)
-            print(f"Player {current_player} wins!")
-            break
-
-        if check_draw(board):
-            render(board)
-            print("It's a draw!")
+        is_finished = player_move(board, current_player, game_id)
+        if is_finished:
             break
 
         current_player = "O" if current_player == "X" else "X"
@@ -116,38 +131,32 @@ def play_game_with_ai():
 
     print("Welcome to Tic-Tac-Toe!")
     print("Player is X, AI is O")
+    game_id = save_game("player 1", "AI", None)
 
     current_player = "X"
     ai_player = "O"
 
+    render(board)
+
     while True:
-        render(board)
-        move_index = get_player_move(board, current_player)
-        board[move_index] = current_player
-        
-        if check_win(board, current_player):
-            render(board)
-            print(f"Player {current_player} wins!")
+        is_finished = player_move(board, current_player, game_id)
+        if is_finished:
             break
 
-        if check_draw(board):
-            render(board)
-            print("It's a draw!")
-            break
-
-        render(board)
         time.sleep(1)
         print("AI move")
         move_index = get_ai_move(board, "O")
         board[move_index] = "O"
+        render(board)
+        save_step(game_id, "O", 0, move_index + 1)
         
         if check_win(board, ai_player):
-            render(board)
+            save_game("player", "AI", "AI")
             print(f"AI wins!")
             break
 
         if check_draw(board):
-            render(board)
+            save_game("player", "AI", "draw")
             print("It's a draw!")
             break
         time.sleep(1)
@@ -156,6 +165,9 @@ def play_game_with_chatgpt():
     board = list(" " * 9)
 
     print("Welcome to Tic-Tac-Toe!")
+    game_id = save_game("player 1", "ChatGPT", None)
+
+    render(board)
 
     current_player = "X"
     ai_player = "O"
@@ -163,21 +175,10 @@ def play_game_with_chatgpt():
     print(f"Player is {current_player}, AI is {ai_player}")
 
     while True:
-        render(board)
-        move_index = get_player_move(board, current_player)
-        board[move_index] = current_player
-        
-        if check_win(board, current_player):
-            render(board)
-            print(f"Player {current_player} wins!")
+        is_finished = player_move(board, current_player, game_id)
+        if is_finished:
             break
 
-        if check_draw(board):
-            render(board)
-            print("It's a draw!")
-            break
-
-        render(board)
         print("AI move")
 
         # Get the AI move from ChatGPT with 3 retries
@@ -185,7 +186,6 @@ def play_game_with_chatgpt():
         while retry < 3:
             try:
                 move_index = get_gpt_move(board, ai_player)
-
                 if board[move_index] != " ":
                     print("Spot already taken. Please choose another.")
                     retry += 1
@@ -202,35 +202,67 @@ def play_game_with_chatgpt():
             break
 
         board[move_index] = "O"
+        render(board)
+        save_step(game_id, "O", 0, move_index + 1)
         
         if check_win(board, ai_player):
-            render(board)
+            save_game("player", "AI", "AI")
             print(f"AI wins!")
             break
 
         if check_draw(board):
-            render(board)
+            save_game("player", "AI", "draw")
             print("It's a draw!")
             break
         time.sleep(1)
 
+def choose_side():
+    side = input("Choose your side (X or O): ")
+    if side not in ["X", "O"]:
+        print("Invalid choice. Please choose X or O.")
+        return choose_side()
+    return side
+
+def choose_game():
+    game_id = input("Choose game (id): ")
+    if not game_id.isdigit():
+        print("Bad ID number")
+        return choose_game()
+    return game_id
+
 def main():
-    mode = input("Choose a mode:\n1. Play with a friend\n2. Play with AI\n3. Play with ChatGPT\n4. Show history\n5. Show game steps\n6. Exit\n")
-    match mode:
-        case "1":
-            play_with_friend()
-        case "2":
-            play_game_with_ai()
-        case "3":
-            play_game_with_chatgpt()
-        case "4":
-            print("Show history")
-        case "5":
-            print("Show game steps")
-        case "6":
-            print("Exit")
-        case _:
-            print("Invalid choice. Exiting...")
+    while True:
+        print("\n======")
+        mode = input("Choose a mode:\n1. Play with a friend\n2. Play with AI\n3. Play with ChatGPT\n4. Show history\n5. Show game steps\n6. Exit\n")
+        match mode:
+            case "1":
+                play_with_friend()
+            case "2":
+                play_game_with_ai()
+            case "3":
+                play_game_with_chatgpt()
+            case "4":
+                print("Show history\n")
+                print(tabulate(get_history(), headers=["Game #", "Player 1", "Player 2", "Winner", "Finished"], tablefmt='orgtbl'))
+                        
+            case "5":
+                print("Show game steps")
+                game_id = choose_game()
+                steps = get_steps(game_id)
+                board = list(" " * 9)
+                print("\n")
+                for step in steps:
+                    print(f"Player: {step[2]}, Position: {step[4]}")
+                    board[step[4] - 1] = step[2]
+                    render(board)
+                print("======")
+
+            case "6":
+                print("Exit")
+                break
+            case _:
+                print("Invalid choice")
+                
 
 # if the script is run directly, call the main function, 
 # otherwise, the functions will be imported into other scripts
