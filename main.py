@@ -39,6 +39,7 @@ def get_move(board, player):
                 continue
             if board[move_index] != " ":
                 print("Spot already taken. Please choose another.")
+                continue
             return move_index
         except ValueError:
             print("Invalid input. Please enter a number.")
@@ -68,4 +69,10 @@ def play_game():
 
         current_player = "O" if current_player == "X" else "X"
 
-play_game()
+def main():
+    play_game()
+
+# if the script is run directly, call the main function, 
+# otherwise, the functions will be imported into other scripts
+if __name__ == "__main__":
+    main()
