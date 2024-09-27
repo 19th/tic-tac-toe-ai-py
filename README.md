@@ -1,5 +1,9 @@
 # tic-tac-toe-ai-py
 
+### Apraksts
+https://docs.google.com/document/d/13nyUVyGsrVgXzWmtraxEFqgFxTSUyaQhfdrwxsXt12c/edit
+
+### Noderīgi materiāli
 https://www.neverstopbuilding.com/blog/minimax
 
 ### Projekta vērtēšana
