@@ -20,6 +20,7 @@ def render(board):
 
     print("\n")
 
+# TODO: This one should work very fast and well, but it's not perfect
 def check_win(board, player):
     # check rows
     for row in range(3):
@@ -63,12 +64,13 @@ def player_move(board, player, game_id):
 
     if check_win(board, player):
         update_game(game_id, player, True)
+        draw_you_win()
         print(f"Player {player} wins!")
         return True
 
     if check_draw(board):
         update_game(game_id, "draw", True)
-        print("It's a draw!")
+        draw_draw()
         return True
 
     return False
@@ -152,12 +154,12 @@ def play_game_with_ai():
         
         if check_win(board, ai_player):
             save_game("player", "AI", "AI")
-            print(f"AI wins!")
+            draw_ai_win()
             break
 
         if check_draw(board):
             save_game("player", "AI", "draw")
-            print("It's a draw!")
+            draw_draw()
             break
         time.sleep(1)
 
@@ -207,12 +209,12 @@ def play_game_with_chatgpt():
         
         if check_win(board, ai_player):
             save_game("player", "AI", "AI")
-            print(f"AI wins!")
+            draw_ai_win()
             break
 
         if check_draw(board):
             save_game("player", "AI", "draw")
-            print("It's a draw!")
+            draw_draw()
             break
         time.sleep(1)
 
@@ -230,9 +232,71 @@ def choose_game():
         return choose_game()
     return game_id
 
+def draw_logo():
+    logo = """
+######## ####  ######     ########    ###     ######     ########  #######  ######## 
+   ##     ##  ##    ##       ##      ## ##   ##    ##       ##    ##     ## ##       
+   ##     ##  ##             ##     ##   ##  ##             ##    ##     ## ##       
+   ##     ##  ##             ##    ##     ## ##             ##    ##     ## ######   
+   ##     ##  ##             ##    ######### ##             ##    ##     ## ##       
+   ##     ##  ##    ##       ##    ##     ## ##    ##       ##    ##     ## ##       
+   ##    ####  ######        ##    ##     ##  ######        ##     #######  ######## 
+"""
+
+    print("="*80)
+    print(logo)
+    print("="*80)
+    print("\n")
+
+def draw_draw():
+    logo = """
+  ___ _   _                   _                    _        __
+ |_ _| |_( )___    __ _    __| |_ __ __ ___      _| |  _   / /
+  | || __|// __|  / _` |  / _` | '__/ _` \ \ /\ / / | (_) / / 
+  | || |_  \__ \ | (_| | | (_| | | | (_| |\ V  V /|_|  _ / /  
+ |___|\__| |___/  \__,_|  \__,_|_|  \__,_| \_/\_/ (_) (_)_/                                                            
+"""
+
+    print("="*80)
+    print(logo)
+    print("="*80)
+    print("\n")
+
+def draw_you_win():
+    logo = """
+ __   _____  _   _  __        _____  _   _   __  
+ \ \ / / _ \| | | | \ \      / / _ \| \ | |  \ \ 
+  \ V / | | | | | |  \ \ /\ / / | | |  \| | (_) |
+   | || |_| | |_| |   \ V  V /| |_| | |\  |  _| |
+   |_| \___/ \___/     \_/\_/  \___/|_| \_| (_) |
+                                             /_/                                                    
+"""
+
+    print("="*80)
+    print(logo)
+    print("="*80)
+    print("\n")
+
+def draw_ai_win():
+    logo = """
+     _    ___  __        _____  _   _      __
+    / \  |_ _| \ \      / / _ \| \ | |  _ / /
+   / _ \  | |   \ \ /\ / / | | |  \| | (_) | 
+  / ___ \ | |    \ V  V /| |_| | |\  |  _| | 
+ /_/   \_\___|    \_/\_/  \___/|_| \_| (_) | 
+                                          \_\                                                  
+"""
+
+    print("="*80)
+    print(logo)
+    print("="*80)
+    print("\n")
+
 def main():
+    draw_logo()
+
     while True:
-        print("\n======")
+    
         mode = input("Choose a mode:\n1. Play with a friend\n2. Play with AI\n3. Play with ChatGPT\n4. Show history\n5. Show game steps\n6. Exit\n")
         match mode:
             case "1":
